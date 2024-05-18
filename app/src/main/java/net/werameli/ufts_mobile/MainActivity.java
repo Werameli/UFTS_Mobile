@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     FTPClient ftpClient;
     ListView listView;
     String namechecktext, passchecktext, ipchecktext;
-    String adresult;
+    String adresult, pos;
     SharedPreferences.Editor editor;
     ArrayList<String> files;
 
@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public static boolean sendPingRequest(String ipAddress)
-            throws IOException
-    {
+            throws IOException {
         InetAddress checkable = InetAddress.getByName(ipAddress);
         if (checkable.isReachable(5000))
             return true;
@@ -77,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     public void prefswriter(String ip, String name, String pass) {
         editor.putBoolean("logged", true);
         editor.putString("ip", ip);
@@ -87,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
     }
 
+    public void isChecked() {
+
+    }
 
 
     protected void loginFunc() throws Exception {
@@ -119,12 +120,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Files refreshed!", Toast.LENGTH_SHORT).show();
     }
 
-    public void isChecked() {
-        if (!listView.isItemChecked(listView.getSelectedItemPosition())) {
-            Toast.makeText(this, "Please select your file!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
 
     protected void mainPage() throws IOException {
 
@@ -135,14 +130,14 @@ public class MainActivity extends AppCompatActivity {
         btnDelete = findViewById(R.id.btn_delete);
         btnRename = findViewById(R.id.btn_rename);
 //        btnUpload = findViewById(R.id.btn_upload);
-        btnDownload = findViewById(R.id.btn_upload);
+        btnDownload = findViewById(R.id.btn_download);
         btnListFiles = findViewById(R.id.btn_listfiles);
         listView = findViewById(R.id.list);
 
 
 
         files = ftp.ftpPrintFilesList(ftpClient,"~");
-        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, files);
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, files);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -150,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 listView.setItemChecked(position, true);
-                Toast.makeText(MainActivity.this, "Selected: " + listView.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
+                pos = listView.getItemAtPosition(position).toString();
+                Toast.makeText(MainActivity.this, "Selected: " + pos, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -160,16 +156,15 @@ public class MainActivity extends AppCompatActivity {
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isChecked();
                 try {
                     File filesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    File file = new File(filesDir, "test.txt");
+                    File file = new File(filesDir, pos);
                     if (!file.exists()) {
                         if (!file.createNewFile()) {
                             Toast.makeText(MainActivity.this, "Failed to create local file!", Toast.LENGTH_SHORT).show();
                         }
                     }
-                    ftp.downloadFile("test.txt", file, ftpClient);
+                    ftp.downloadFile(pos, file, ftpClient);
                     Toast.makeText(MainActivity.this, "Download completed!", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -187,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
         btnRename.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isChecked();
                 try {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Enter new name (with file extension):");
@@ -212,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                     builder.show();
 
-                    ftp.renameFile("test.txt", adresult, ftpClient);
+                    ftp.renameFile(pos, adresult, ftpClient);
                     refresher(adapter);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -223,9 +217,8 @@ public class MainActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isChecked();
                 try {
-                    String item = "test.txt";
+                    String item = pos;
                     ftp.deleteFile(item, ftpClient);
                     Toast.makeText(MainActivity.this, "Selected file deleted successfully!", Toast.LENGTH_SHORT).show();
                     refresher(adapter);
