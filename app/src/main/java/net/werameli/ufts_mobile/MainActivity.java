@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> files;
 
 //    public static String hashPassword(String plainTextPassword) {
-//        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt(10));          T.B.F in V2
+//        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt(10));          T.B.A in V2
 //    }
 
     public static boolean sendPingRequest(String ipAddress)
@@ -85,8 +85,19 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    public void isChecked() {
+    public boolean isChecked() {
+        if (listView.isSelected()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
+    public void refresher() throws IOException {
+        files = ftp.ftpPrintFilesList(ftpClient, "~");
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, files);
+        listView.setAdapter(adapter);
+        Toast.makeText(this, "Files refreshed!", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -113,14 +124,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void refresher(ArrayAdapter adapter) throws IOException {
-        listView.clearChoices();
-        files = ftp.ftpPrintFilesList(ftpClient, "~");
-        adapter.notifyDataSetChanged();
-        Toast.makeText(this, "Files refreshed!", Toast.LENGTH_SHORT).show();
-    }
-
-
     protected void mainPage() throws IOException {
 
         setContentView(R.layout.activity_main);
@@ -144,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                listView.setItemChecked(position, true);
+                listView.setSelected(true);
                 pos = listView.getItemAtPosition(position).toString();
                 Toast.makeText(MainActivity.this, "Selected: " + pos, Toast.LENGTH_SHORT).show();
             }
@@ -156,19 +159,24 @@ public class MainActivity extends AppCompatActivity {
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    File filesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    File file = new File(filesDir, pos);
-                    if (!file.exists()) {
-                        if (!file.createNewFile()) {
-                            Toast.makeText(MainActivity.this, "Failed to create local file!", Toast.LENGTH_SHORT).show();
+                if (isChecked()) {
+                    try {
+                        File filesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                        File file = new File(filesDir, pos);
+                        if (!file.exists()) {
+                            if (!file.createNewFile()) {
+                                Toast.makeText(MainActivity.this, "Failed to create local file!", Toast.LENGTH_SHORT).show();
+                            }
                         }
+                        ftp.downloadFile(pos, file, ftpClient);
+                        Toast.makeText(MainActivity.this, "Download completed!", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                    ftp.downloadFile(pos, file, ftpClient);
-                    Toast.makeText(MainActivity.this, "Download completed!", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                } else {
+                    Toast.makeText(MainActivity.this, "Please select a file!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
@@ -182,49 +190,63 @@ public class MainActivity extends AppCompatActivity {
         btnRename.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Enter new name (with file extension):");
+                if (isChecked()) {
+                    try {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Enter new name (with file extension):");
 
-                    final EditText input = new EditText(MainActivity.this);
+                        final EditText input = new EditText(MainActivity.this);
 
-                    input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
-                    builder.setView(input);
+                        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
+                        builder.setView(input);
 
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            adresult = input.getText().toString();
-                            Toast.makeText(MainActivity.this, adresult, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                        }
-                    });
-                    builder.show();
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                adresult = input.getText().toString();
+                                try {
+                                    ftp.renameFile(pos, adresult, ftpClient);
+                                    refresher();
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                        builder.show();
 
-                    ftp.renameFile(pos, adresult, ftpClient);
-                    refresher(adapter);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Please select a file!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    String item = pos;
-                    ftp.deleteFile(item, ftpClient);
-                    Toast.makeText(MainActivity.this, "Selected file deleted successfully!", Toast.LENGTH_SHORT).show();
-                    refresher(adapter);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (isChecked()) {
+                    try {
+                        String item = pos;
+                        ftp.deleteFile(item, ftpClient);
+                        Toast.makeText(MainActivity.this, "Selected file deleted successfully!", Toast.LENGTH_SHORT).show();
+                        refresher();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Please select a file!", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
@@ -247,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    refresher(adapter);
+                    refresher();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

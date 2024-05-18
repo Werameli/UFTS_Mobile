@@ -64,6 +64,7 @@ public class ftp {
     }
 
     public static void deleteFile(String path, FTPClient ftpClient) throws Exception {
+        ftpClient.enterLocalPassiveMode();
         ftpClient.deleteFile(path);
     }
 }
