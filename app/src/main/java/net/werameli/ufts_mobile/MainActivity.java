@@ -1,7 +1,5 @@
 package net.werameli.ufts_mobile;
 
-import static android.app.PendingIntent.getActivity;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -116,11 +114,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void refresher(ArrayAdapter adapter) throws IOException {
         listView.clearChoices();
-        files = ftp.ftpPrintFilesList(ftpClient,"~");
+        files = ftp.ftpPrintFilesList(ftpClient, "~");
         adapter.notifyDataSetChanged();
         Toast.makeText(this, "Files refreshed!", Toast.LENGTH_SHORT).show();
     }
 
+    public void isChecked() {
+        if (!listView.isItemChecked(listView.getSelectedItemPosition())) {
+            Toast.makeText(this, "Please select your file!", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
     protected void mainPage() throws IOException {
@@ -146,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                listView.setItemChecked(position, true); // !!!
+                listView.setItemChecked(position, true);
                 Toast.makeText(MainActivity.this, "Selected: " + listView.getItemAtPosition(position), Toast.LENGTH_SHORT).show();
             }
         });
@@ -157,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isChecked();
                 try {
                     File filesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     File file = new File(filesDir, "test.txt");
@@ -183,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         btnRename.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isChecked();
                 try {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Enter new name (with file extension):");
@@ -218,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isChecked();
                 try {
                     String item = "test.txt";
                     ftp.deleteFile(item, ftpClient);
