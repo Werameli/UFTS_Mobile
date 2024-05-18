@@ -141,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         files = ftp.ftpPrintFilesList(ftpClient,"~");
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, files);
         listView.setAdapter(adapter);
+        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

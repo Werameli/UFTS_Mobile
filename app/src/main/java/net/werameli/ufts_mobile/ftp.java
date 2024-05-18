@@ -67,10 +67,6 @@ public class ftp {
         }
 
         return success;
-
-//        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//        ftpClient.retrieveFile(path, byteArrayOutputStream);
-//        return byteArrayOutputStream.toByteArray();
     }
 
     public static void deleteFile(String path, FTPClient ftpClient) throws Exception {
