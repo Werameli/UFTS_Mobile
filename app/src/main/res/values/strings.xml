@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">UFTSMobile</string>
+
+    <string name="UFTSLoginText">Developer Release Rev.C</string>
+    <string name="achtung">NOT INTENDED FOR PUBLIC</string>
+
+    <string name="UFTSusrname">Username</string>
+    <string name="UFTSpwd">Password</string>
+    <string name="UFTScon">Connect to a Server</string>
+    <string name="UFTSIP">Backend IP</string>
+    <string name="serverSettings">Server Settings</string>
+
+    <string name="UFTSSettingsIPPORTtext">Configure backend server connection</string>
+    <string name="UFTSSettingsServerExit">Save and Exit</string>
+    <string name="UFTSSettingsIPhint">MySQL IP</string>
+    <string name="UFTSSettingsPORThint">PORT</string>
+    <string name="UFTSSettingsPINGSAVEtext">Ping and Save</string>
+    <string name="UFTSSettingsLOGINhint">Backend login</string>
+    <string name="UFTSSettingsPWDhind">Backend password</string>
+    <string name="UFTSSettingsCREDCHECKSAVE">Check and save</string>
+    <string name="UFTSSettingsCREDtext">Configure backend credentials</string>
+
+</resources>
