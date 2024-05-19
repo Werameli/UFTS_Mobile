@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">UFTSMobile</string>
 
-    <string name="UFTSLoginText">Developer Release Rev.C</string>
+    <string name="UFTSLoginText">Developer Release Rev.F</string>
     <string name="achtung">NOT INTENDED FOR PUBLIC</string>
 
     <string name="UFTSusrname">Username</string>
